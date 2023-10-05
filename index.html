@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    @font-face {
+      font-family: 'LOTTERIACHAB';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/LOTTERIACHAB.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body {
+      cursor: none;
+      background: url('background-image.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      overflow: hidden;
+    }
+    #custom-cursor {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      background-image: url('custom-cursor.png');
+      background-size: cover;
+      pointer-events: none;
+      transform: scale(2);
+      z-index: 999;
+    }
+    .fruit {
+      position: absolute;
+      cursor: pointer;
+    }
+    #instructions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 50px;
+      font-family: 'LOTTERIACHAB', sans-serif;
+      color: #FFFFCC;
+      text-align: center;
+      -webkit-text-stroke: 2px #CC33FF;
+    }
+    #gauge-container {
+      position: absolute;
+      top: calc(50% + 130px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 20px;
+      background-color: #333;
+    }
+    #gauge-bar {
+      width: 0%;
+      height: 100%;
+      background-color: #FF66B2;
+    }
+    #end-game {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      text-align: center;
+    }
+    #end-game-text {
+      font-size: 50px;
+      font-family: 'LOTTERIACHAB', sans-serif;
+      color: #FFFFCC;
+      text-align: center;
+      -webkit-text-stroke: 2px #CC33FF;
+      position: absolute;
+      top: calc(50% - 100px); 
+      left: 50%;
+      transform: translate(-50%, 0);
+    }
+    #end-game-image {
+      position: absolute;
+      top: calc(50% + 50px); 
+      left: 50%;
+      transform: translate(-50%, 0);
+    }
+  </style>
+</head>
+<body>
+  <div id="custom-cursor"></div>
+  <div class="content">
+    <p id="instructions">잠만보에게 과일을 주세요! 카운트: <span id="count">0</span></p>
+    <div id="gauge-container">
+      <div id="gauge-bar"></div>
+    </div>
+    <div id="end-game">
+      <div id="end-game-text">축하합니다! 배부른 잠만보는 길을 비켜줬습니다~</div>
+      <img id="end-game-image" src="https://media.giphy.com/media/e5xL4bU0ETgLm/giphy.gif" alt="Game Over">
+    </div>
+    <script>
+      const fruits = [
+        'apple.png',
+        'banana.png',
+        'cherry.png',
+        'orange.png',
+        'strawberry.png'
+      ];
+      let count = 0;
+      let gameOver = false;
+
+      const cursorImage = {
+        original: 'custom-cursor.png',
+        clicked: 'custom-cursor-clicked.png'
+      };
+
+      const clickSound = new Audio('click-sound.mp3');
+
+      function restoreCursor() {
+        const customCursor = document.getElementById('custom-cursor');
+        customCursor.style.backgroundImage = `url('${cursorImage.original}')`;
+      }
+
+      function updateGauge() {
+        const gaugeBar = document.getElementById('gauge-bar');
+        if (count >= 15 && !gameOver) {
+          gaugeBar.style.width = '100%';
+
+          const endGamePage = document.getElementById('end-game');
+          endGamePage.style.display = 'block';
+          gameOver = true;
+        } else {
+          gaugeBar.style.width = (count / 15) * 100 + '%';
+        }
+      }
+
+      function getRandomFruit() {
+        const randomIndex = Math.floor(Math.random() * fruits.length);
+        return fruits[randomIndex];
+      }
+
+      function createRandomFuitImage() {
+        if (gameOver) return;
+
+        const fruitImage = document.createElement('img');
+        const xPos = Math.random() * (window.innerWidth - 64);
+        const yPos = Math.random() * (window.innerHeight - 64);
+
+        fruitImage.src = getRandomFruit();
+        fruitImage.classList.add('fruit');
+        fruitImage.style.left = xPos + 'px';
+        fruitImage.style.top = yPos + 'px';
+
+        fruitImage.addEventListener('click', () => {
+          const customCursor = document.getElementById('custom-cursor');
+          customCursor.style.backgroundImage = `url('${cursorImage.clicked}')`;
+
+          clickSound.play();
+
+          setTimeout(restoreCursor, 1000);
+
+          fruitImage.remove();
+          count++;
+          document.getElementById('count').textContent = count;
+
+          updateGauge();
+        });
+
+        document.body.appendChild(fruitImage);
+
+        setTimeout(() => {
+          if (!gameOver) {
+            fruitImage.remove();
+          }
+        }, 3000);
+      }
+
+      setInterval(createRandomFuitImage, 300);
+
+      const customCursor = document.getElementById('custom-cursor');
+      document.addEventListener('mousemove', (e) => {
+        customCursor.style.left = e.clientX - customCursor.offsetWidth / 2 + 'px';
+        customCursor.style.top = e.clientY - customCursor.offsetHeight / 2 + 'px';
+      });
+    </script>
+  </div>
+</body>
+</html>
+
